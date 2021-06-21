@@ -1,2 +1,3 @@
 # R_codes
-R codes for Lecture Notes of Time Series Econometrics for the MSc and PhD course in Time Series Econometrics. I´ve been teaching this course since 2000 in an undergraduated level and after 2008 also as a graduated level. From 2000 up to 2018 I used EVIEWS and OxMetrics for the examples and after 2019 also R. In this repository I will present the codes in R and there will be to other repositories for EVIEWS and OxMetrics. 
+R codes for Lecture Notes of Time Series Econometrics for the MSc and PhD course in Time Series Econometrics. 
+Intuition for non stationary processes and how to induce stationarity
