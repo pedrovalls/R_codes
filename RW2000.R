@@ -75,7 +75,7 @@ qqnorm(yar_ts); qqline(yar_ts, col=2)
 
 jarque.bera.test(yar_ts)
 
-# Test for constant mean and variance
+# Test for constant mean and variance - Valls' Windows
 mean_yar<-mean(yar_ts[1:100])
 stdev_yar<-sd(yar_ts[1:100])
 plot(yar, type='l', col='blue')
