@@ -58,6 +58,13 @@ x <- mu
 par(mfrow=c(1,1))
 plot(x, type = "l", main = "", xlab = "Time", ylab = "X")
 
+# Test for constant mean and variance - Valls' Windows
+mean_x<-mean(x[1:100])
+stdev_x<-sd(x[1:100])
+plot(x, type='l', col='blue')
+abline(h=mean_x+1.96*stdev_x, col='red', lty=2)
+abline(h=mean_x-1.96*stdev_x, col='red', lty=2)
+
 # Calculate and print autocorrelation for lags up to 12
 par(mfrow=c(1,2))
 
