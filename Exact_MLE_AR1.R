@@ -24,6 +24,12 @@ load_package('lmtest')
 library(forecast)
 library(stats)
 library(lmtest)
+library(tidyverse)
+library(modelr)
+library(broom)
+
+
+
 
 # Set seed for reproducibility
 set.seed(123456)
@@ -56,6 +62,14 @@ library(lmtest)
 model_ols <- lm(y[2:n] ~ y[1:(n-1)])
 rho <- coef(model_ols)[2]
 s2 <- summary(model_ols)$sigma^2
+summary(model_ols)
+broom::glance(model_ols)
+AIC_model_ols <- AIC(model_ols)/249
+BIC_model_ols <- BIC(model_ols)/249
+print(AIC_model_ols)
+print(BIC_model_ols)
+
+
 
 # Function to calculate the log likelihood
 log_likelihood <- function(rho) {
@@ -67,11 +81,25 @@ log_likelihood <- function(rho) {
 
 # Optimize the log likelihood
 library(stats)
-result <- optim(par = rho, fn = log_likelihood, method = "BFGS")
+#result <- optim(par = rho, fn = log_likelihood, method = "BFGS")
+result <- optim(par = rho, NULL, fn = log_likelihood, method = "BFGS", hessian = TRUE)
 print(result)
+
+
 # Display the results
 result$par
 result$value
+result$hessian
+dp_exato = 2/(result$hessian/(250^0.5))
+t_stat_exato = result$par/dp_exato
+AIC_MLE <- (result$value*2+2*1)/250
+BIC_MLE <- (result$value*2+2*1*log(250))/250
+print(AIC_MLE)
+print(BIC_MLE)
+print(dp_exato)
+print(t_stat_exato)
+
+
 
 # Compare with OLS estimates
 coef(model_ols)
