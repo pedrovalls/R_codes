@@ -39,10 +39,8 @@ for (i in 2:n) {
 }
 
 # Plot AR(1)
-# Plotting the AR(2) series
 par(mfrow=c(1,1))
 plot(y, type = 'l', col = 'blue', 
-     #main = expression(AR(2) ~ with ~ real ~ roots), 
      main = " ", 
      xlab = "Time", ylab = "Value",
      cex.main = 1.2, cex.axis = 0.8, cex.lab = 0.8)
