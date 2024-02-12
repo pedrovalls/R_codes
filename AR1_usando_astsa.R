@@ -5,15 +5,15 @@ set.seed(123456)
 num = 1000
 N = num+1
 x = sarima.sim(n=N, ar=.75)
-y = ts(x[-1])   
+yar1 = ts(x[-1])   
 
 par(mfrow=c(1,2))
-Acf(y)
-Pacf(y)
+Acf(yar1)
+Pacf(yar1)
 
 
 # Initial Estimates 
-u = ts.intersect(y, lag(y,-1), lag(y,-2)) 
+u = ts.intersect(y, lag(yar1,-1), lag(yar1,-2)) 
 varu = var(u)
 coru = cor(u) 
 phi = coru[1,3]/coru[1,2] 
@@ -25,7 +25,7 @@ r = 0
 Linn=function(para){
   phi = para[1]; sigw = para[2]; sigv = para[3] 
   Sigma0 = (sigw^2)/(1-phi^2); Sigma0[Sigma0<0]=0 
-  kf = Kfilter(y,A=1,mu0=0,Sigma0,phi,sigw,sigv)
+  kf = Kfilter(yar1,A=1,mu0=0,Sigma0,phi,sigw,sigv)
   return(kf$like)   
 }
 
