@@ -50,6 +50,6 @@ tsplot(RLIBOV, type ='l',col=4, pch=19, ylab=expression(y[~t]), main="Log Return
 RLIBOVC=RLIBOV-mean(RLIBOV)
 
 ##
-# SV using SVfilter
+# SV using SV.mle
 #
 SV_RLIBOVC = SV.mle(RLIBOVC,feedback=FALSE)
