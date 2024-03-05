@@ -42,24 +42,27 @@ N = num+1
 
 epsilon   = rnorm(num,0,3)
 
-ysar4 =   rep(0,num)
+
+ydsar4 =   rep(0,num)
 
 for (i in 1:4) {
-  ysar4[i] =  epsilon[i]
+  ydsar4[i] =  epsilon[i]
 }
 
 for (i in 5:num) {
-  ysar4[i] =  0.4*ysar4[i-4] + epsilon[i]
+  ydsar4[i] =  ydsar4[i-4] + epsilon[i]
 }
 
+par(mfrow=c(1,1))
+tsplot(ydsar4, type ='l',col=4, pch=19, ylab=expression(y[~t]), main="Seasonal Difference")
 
 
 #
 # ACF e PACF usando FORECAST
 #
 par(mfrow=c(1,2))
-Acf(ysar4,lag.max=20)
-Pacf(ysar4,lag.max=20)
+Acf(ydsar4,lag.max=20)
+Pacf(ydsar4,lag.max=20)
 
 
 #
@@ -68,101 +71,65 @@ Pacf(ysar4,lag.max=20)
 par(mfrow=c(1,2))
 
 
-acf(ysar4, 20, xlim=c(1,20))   # set the x-axis limits to start at 1 then
+acf(ydsar4, 20, xlim=c(1,20))   # set the x-axis limits to start at 1 then
 #  look at the graph and note the y-axis limits
-pacf(ysar4, 20, ylim=c(-.1,1)) #   then use those limits here
+pacf(ydsar4, 20, ylim=c(-.7,1)) #   then use those limits here
 
 
 
 # Initial Estimates 
 # Initial Estimates 
+preli_dsar4 = sarima(ydsar4,4,0,0,no.constant=TRUE)
 
-
-y = ysar4
+y = ydsar4
 num = length(y)
 A = matrix(c(1,0,0,0),1,4)
 #######################
 # Function to evaluate the likelihood 
 Linnar4=function(para){
-  phi1 =para[1]; phi2 = para[2]; phi3 = para[3]; phi4 = para[4];
+  phi1 =0; phi2 = 0; phi3 = 0; phi4 = para[4];
   mu0=matrix(c(0,0,0,0),4,1)
   Sigma0 = diag(100,4)
-  Phi = matrix(c(phi1,phi2,phi3,phi4,1,0,0,0,0,1,0,0,0,0,1,0),4) 
+  Phi = matrix(c(0,0,0,phi4,1,0,0,0,0,1,0,0,0,0,1,0),4) 
   S = 1
   sR = para[5]
-  sQ = matrix(c(phi1,phi2,phi3,phi4),4)*sR
+  sQ = matrix(c(0,0,0,phi4),4)*sR
   
   kf = Kfilter(y,A,mu0,Sigma0,Phi,sQ,sR, S=S, version =2)
   return(kf$like)   
 }
 
 
-npar=6
+npar=2
 
 
 # Estimation 
 #
 preli_ar4 = sarima(y,4,0,0,no.constant=TRUE)
-init.par = c(phi1=preli_ar4$fit$coef[1],phi2=preli_ar4$fit$coef[2],phi3=preli_ar4$fit$coef[3],phi4=preli_ar4$fit$coef[4], sR=1)
+init.par = c(phi1=0,phi2=-0,phi3=0,phi4=preli_ar4$fit$coef[4], sR=1)
 #lower bound on parameters
 #L=c(0,-0.5,0,-0.5)
 #upper bound on parameters
 # U = c(0.5,0,0.5,0)
 (ests = optim(init.par, Linnar4, gr=NULL, method="BFGS", hessian=TRUE, control=list(trace=1, REPORT=1, factr=10^8))) 
 
+ests$par
+ests$hessian
 
 
 
 
 
+new_hessian = ests$hessian[4:5,4:5]
 
-#new_hessian = ests$hessian[1:4,1:4]
+SE       = sqrt(diag(solve(new_hessian)))
+SE
 
-SE       = sqrt(diag(solve(ests$hessian)))
-round(cbind(estimate=ests$par, SE), 5) # results
 #################################################
 
 
-# Initial Estimates 
-u = ts.intersect(yar4, stats::lag(yar4,-1), stats::lag(yar4,-2), stats::lag(yar4,-3), stats::lag(yar4,-4)) 
-
-y = u[,1]
-num = length(y)
-A = matrix(c(1,0,0,0),1,4)
-# Function to evaluate the likelihood 
-Linnar4=function(para){
-  phi1 =0; phi2 = 0; phi3 = 0; phi4 = para[4];
-  mu0=matrix(c(0,0,0,0),4,1)
-  Sigma0 = diag(100,4)
-  Phi = matrix(c(phi1,phi2,phi3,phi4,1,0,0,0,0,1,0,0,0,0,1,0),4) 
-  S = 1
-  sR = para[5]
-  sQ = matrix(c(phi1,phi2,phi3,phi4),4)*sR
-  
-  kf = Kfilter(y,A,mu0,Sigma0,Phi,sQ,sR, S=S, version =2)
-  return(kf$like)   
-}
-
-
-npar=6
-
-
-# Estimation 
-#
-preli_ar4 = sarima(yar4,4,0,0,no.constant=TRUE)
-init.par = c(phi1=0,phi2=0,phi3=0,phi4=preli_ar4$fit$coef[4], sR=1)
-#lower bound on parameters
-#L=c(0,-0.5,0,-0.5)
-#upper bound on parameters
-# U = c(0.5,0,0.5,0)
-(ests = optim(init.par, Linnar4, gr=NULL, method="BFGS", hessian=TRUE, control=list(trace=1, REPORT=1, factr=10^8))) 
-
-new_hessian = ests$hessian[4:5,4:5]
-new_hessian
-SE = sqrt(diag(solve(new_hessian)))
-
-SE
 ests$par
+
 
 t_stat = c(ests$par[4]/SE[1], ests$par[5]/SE[2] )
 t_stat
@@ -197,24 +164,25 @@ sR = ests$par[5]
 sQ = matrix(c(1,0,0,0),4)*sR
 
 # mu0 = 0;  sigma0 = 1;  phi = 1;  sQ = 1;  sR = 1   
-ks = Ksmooth(ysar4, A, mu0, Sigma0, phi, sQ, sR)   
+ks = Ksmooth(ydsar4, A, mu0, Sigma0, phi, sQ, sR)   
 
 # pictures 
 par(mfrow=c(3,1))
 #par(mfrow=c(1,1))
-tsplot(ysar4[5:1000], type='p', col=4, pch=19, ylab=expression(mu[~t]), main="Prediction")
+
+tsplot(ydsar4[5:1000], type='p', col=4, pch=19, ylab=expression(mu[~t]), main="Prediction")
 #, ylim=c(-5,10)) 
 lines(ks$Xp[1, ,5:1000 ], col=6)
 lines(ks$Xp[1, ,5:1000 ]+2*sqrt(ks$Pp[1, 1,5:1000 ]), lty=6, col=6)
 lines(ks$Xp[1, ,5:1000 ]-2*sqrt(ks$Pp[1, 1,5:1000 ]), lty=6, col=6)
 
-tsplot(ysar4[5:1000], type='p', col=4, pch=19, ylab=expression(mu[~t]), main="Filter")
+tsplot(ydsar4[5:1000], type='p', col=4, pch=19, ylab=expression(mu[~t]), main="Filter")
 #, ylim=c(-5,10)) 
 lines(ks$Xf[1, ,5:1000 ], col=6)
 lines(ks$Xf[1, ,5:1000 ]+2*sqrt(ks$Pf[1, 1,5:1000 ]), lty=6, col=6)
 lines(ks$Xf[1, ,5:1000 ]-2*sqrt(ks$Pf[1, 1,5:1000 ]), lty=6, col=6)
 
-tsplot(ysar4[5:1000], type='p', col=4, pch=19, ylab=expression(mu[~t]), main="Smoother")
+tsplot(ydsar4[5:1000], type='p', col=4, pch=19, ylab=expression(mu[~t]), main="Smoother")
 #, ylim=c(-5,10)) 
 lines(ks$Xs[1, ,5:1000 ], col=6)
 lines(ks$Xs[1, ,5:1000 ]+2*sqrt(ks$Ps[1, 1,5:1000 ]), lty=6, col=6)
