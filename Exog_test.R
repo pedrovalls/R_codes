@@ -31,3 +31,11 @@ library(astsa)
 library(stats)
 
 setwd("C:/Users/Pedro/Dropbox/EcoIII2021/Lecture6_adl/R_code")
+datagive1 <- read_excel("datagive1.xlsx")
+inc = datagive1$inc[2:159]
+cons = datagive1$cons[2:159]
+cons1=datagive1$cons1[2:159]
+eq1 <- lm(inc ~ cons+cons1)
+res_eq1 = eq1$residuals
+eq2 <- lm(cons ~ inc+res_eq1)
+summary(eq2)
