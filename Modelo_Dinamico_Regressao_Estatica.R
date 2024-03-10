@@ -55,8 +55,24 @@ summary(model)
 
 coeftest(model, vcov = vcovHC(model, type = "HC0"))
 
-AIC(model)
-BIC(model)
+coeftest(model, vcov = vcovHAC(model))
+
+
+num = length(datagive1$cons)-1
+num
+AIC_eq1= AIC(model)
+AIC_eq1
+AIC_eq1_T=AIC_eq1/num
+AIC_eq1_T
+BIC_eq1 = BIC(model)
+BIC_eq1
+BIC_eq1_T=BIC_eq1/num
+BIC_eq1_T
+npar_eq1 = 2
+num = length(datagive1$cons)-1
+num
+loglik_eq1 = -(1/2)*(AIC_eq1 - 2*npar_eq1)
+loglik_eq1
 
 # Create a data frame of predicted values and standard errors
 predictions <- data.frame(
@@ -81,7 +97,7 @@ ggplot(predictions, aes(x = datagive1$Date)) +
 # Plot residuals with 2*sigma^{2}
 
 sigma_value <- sigma(model)  # Calculate or specify the sigma of the model
-
+sigma_value
 ggplot(predictions, aes(x = datagive1$Date, y = Residuals)) +
   geom_point() +
   geom_line() +
