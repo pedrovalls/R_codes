@@ -66,6 +66,17 @@ linc = linc[2:159]
 # Estimate the autoregressive model with a constant and an independent variable
 model_statRegAR <- Arima(lcons, order=c(1,0,0), xreg=linc, include.mean=TRUE)
 summary(model_statRegAR)
+
+
+
+t_stat = c(model_statRegAR$coef[1]/(model_statRegAR$var.coef[1,1]^0.5), model_statRegAR$coef[2]/(model_statRegAR$var.coef[2,2]^0.5), model_statRegAR$coef[3]/(model_statRegAR$var.coef[3,3]^0.5) )
+t_stat
+
+p_value = c(1-pnorm(t_stat[1]), 1- pnorm(t_stat[2]), 1-pnorm(t_stat[3]))
+p_value
+
+
+
 AIC_statRegAR = model_statRegAR$aic
 AIC_statRegAR
 
@@ -116,21 +127,21 @@ ggplot(plot_data, aes(x = Time)) +
 # Plot residuals
 lconsres <- residuals(model_statRegAR)
 # Generate the confidence intervals for residuals
-lconsresup <- lconsres + 2*se
-lconsreslow <- lconsres - 2*se
+lconsresup <-  + 2*se
+lconsreslow <-  - 2*se
 
-ggplot(plot_data, aes(x = Time)) +
+
+ 
+  ggplot(plot_data, aes(x = Time, y = lconsres)) +
   geom_line(aes(y = lconsres, color = "Residuals"), size = 1) +
-  geom_ribbon(aes(ymin = lconsreslow, ymax = lconsresup, fill = "Confidence Interval"), alpha = 0.5) +
-  scale_color_manual(values = c("Residuals" = "blue")) +
-  scale_fill_manual(values = c("Confidence Interval" = "grey80")) +
-  labs(title = "Residuals with Confidence Intervals",
-       y = "Residuals",
-       color = "Legend", # This labels the color legend
-       fill = "") + # This ensures the fill legend does not have a title, adjust as needed
+  geom_point(aes(color = "Residuals")) +  # Assign color within aes for legend
+  geom_line(aes(color = "Residuals")) +  # Use same color as points to keep them in a single legend item
+  geom_hline(aes(yintercept = 2 * se, linetype = "2*sigma"), color = "blue") +  # Map linetype to aes
+  geom_hline(aes(yintercept = -2 * se, linetype = "-2*sigma"), color = "gray") +  # Map linetype to aes
+  scale_color_manual(values = c("Residuals" = "red")) +  # Manual color values for points and lines
+  scale_linetype_manual(values = c("2*sigma" = "dashed", "-2*sigma" = "dashed")) +  # Manual linetype values
+  labs(title = "Residuals", x = "Date", y = "residuals", color = "Legend", linetype = "Legend") +  # Custom legend titles
   theme_minimal()
-########
-
 
 
 
