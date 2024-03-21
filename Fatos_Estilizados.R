@@ -200,3 +200,52 @@ Test_engle <- lm(u_engle[,1] ~ u_engle[,2]+
                    u_engle[,12]+
                    u_engle[,13])
 summary(Test_engle)
+
+num = length(RLIbov_sq)
+num
+AIC_Test_engle= AIC(Test_engle)
+AIC_Test_engle
+AIC_Test_engle_T=AIC_Test_engle/num
+AIC_Test_engle_T
+BIC_Test_engle = BIC(Test_engle)
+
+BIC_Test_engle
+BIC_Test_engle_T=BIC_Test_engle/num
+BIC_Test_engle_T
+npar_Test_engle = length(Test_engle$coefficients)
+loglik_Test_engle = -(1/2)*(AIC_Test_engle - 2*npar_Test_engle)
+loglik_Test_engle
+
+
+##
+# Sampling Variance
+##
+
+
+moving_sd_22 = runsd(RLIbov, 
+                     22, 
+                     center = runmean(RLIbov,22))
+moving_sd_44 = runsd(RLIbov, 
+                     44, 
+                     center = runmean(RLIbov,44))
+moving_sd_66 = runsd(RLIbov, 
+                     66, 
+                     center = runmean(RLIbov,66))
+moving_sd_126 = runsd(RLIbov, 
+                     126, 
+                     center = runmean(RLIbov,126))
+moving_sd_252 = runsd(RLIbov, 
+                     252, 
+                     center = runmean(RLIbov,252))
+par(mfrow=c(1,1))
+
+yy = cbind(moving_sd_22,moving_sd_44,moving_sd_66,moving_sd_126,moving_sd_252)
+
+
+
+matplot(DADOS_BOLSA$Date[1:num], yy, type='l', lty = 1,
+        xlim=c(min(DADOS_BOLSA$Date), max(DADOS_BOLSA$Date)),
+        col = 2:6, lwd = 2, xlab = "Date", ylab = "Moving Standard Deviation",
+        main = "Moving Standard Deviations using Different Window Sizes for RLIbov")
+legend("topleft", legend = c("22 days", "44 days", "66 days", "126 days", "252 days"),
+       col = 2:6, lty = 1, lwd = 2)
