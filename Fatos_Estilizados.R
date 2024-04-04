@@ -29,6 +29,14 @@ load_package("sandwich")
 load_package("zoo")
 load_package("car")
 load_package("gets")
+load_package("caTools")
+load_package("rugarch")
+load_package("xts")
+
+
+library(rugarch)
+library(xts)
+
 
 library(xtable)
 library(forecast)
@@ -42,10 +50,16 @@ library(sandwich)
 library(zoo)
 library(car)
 library(gets)
+library(caTools)
 
 
 #setwd("C:/Users/Pedro/Dropbox/EcoIII2021/Lecture6_adl/R_code")
-DADOS_BOLSA <- read_excel("C:/Users/Pedro/Dropbox/EcoIII2021/Lecture_Volatilidade_Univariada/Vol_R/DADOS_BR.xlsx")
+#USING MAC IS THIS
+DADOS_BOLSA <- read_excel("DADOS_BR.xlsx")
+
+View(DADOS_BOLSA)  
+#USING WINDOWS IS THIS
+#DADOS_BOLSA <- read_excel("C:/Users/Pedro.Valls/Dropbox/EcoIII2021/Lecture_Volatilidade_Univariada/Vol_R/DADOS_BR.xlsx")
 ##
 # trasnform IBOVC in time series
 ##
@@ -117,7 +131,7 @@ xx = c(DADOS_BOLSA$Date, DADOS_BOLSA$Date)
 yy = c(y_no_missing-p1, rev(y_no_missing+p1))
 polygon(xx, yy, border=8, col=astsa.col(8, alpha = .1))
 
-write.csv(y_no_missing, file="C:/Users/Pedro/Dropbox/EcoIII2021/Lecture_Volatilidade_Univariada/Vol_R/IBOVC_SB.csv" )
+write.csv(y_no_missing, file="C:/Users/Pedro.Valls/Dropbox/EcoIII2021/Lecture_Volatilidade_Univariada/Vol_R/IBOVC_SB.csv" )
 
 ##
 # Plot IBOV without Missing
@@ -201,6 +215,8 @@ Test_engle <- lm(u_engle[,1] ~ u_engle[,2]+
                    u_engle[,13])
 summary(Test_engle)
 
+
+
 num = length(RLIbov_sq)
 num
 AIC_Test_engle= AIC(Test_engle)
@@ -249,3 +265,40 @@ matplot(DADOS_BOLSA$Date[1:num], yy, type='l', lty = 1,
         main = "Moving Standard Deviations using Different Window Sizes for RLIbov")
 legend("topleft", legend = c("22 days", "44 days", "66 days", "126 days", "252 days"),
        col = 2:6, lty = 1, lwd = 2)
+
+
+
+
+#######
+## EWMA using rugarch
+######
+
+
+
+ewma.spec.fixed = ugarchspec(mean.model=list(armaOrder=c(0,0), include.mean=FALSE),
+                             variance.model=list(model="iGARCH"), fixed.pars=list(alpha1=1-0.94, omega=0))
+ewma.spec.est = ugarchspec(mean.model=list(armaOrder=c(0,0), include.mean=FALSE),
+                           variance.model=list(model="iGARCH"), fixed.pars=list(omega=0))
+igarch.spec = ugarchspec(mean.model=list(armaOrder=c(0,0), include.mean=FALSE),
+                         variance.model=list(model="iGARCH"))
+mod1 = ugarchfit(ewma.spec.fixed, as.xts(RLIbov))
+mod2 = ugarchfit(ewma.spec.est, as.xts(RLIbov))
+mod3 = ugarchfit(igarch.spec, as.xts(RLIbov))
+#plot(DADOS_BOLSA$Date[2:5880],sigma(mod3), main="", auto.grid = FALSE, major.ticks = "auto",
+#     minor.ticks = FALSE,lty=2,ylab="EWMA", xlab="Date",type="l")
+plot(DADOS_BOLSA$Date[2:5880],sigma(mod2), main="", auto.grid = FALSE, major.ticks = "auto",
+     minor.ticks = FALSE,ylab="EWMA", xlab="Date",type="l")
+
+
+#lines(DADOS_BOLSA$Date[2:5880],sigma(mod2), col=2, lty=2,type="l")
+lines(DADOS_BOLSA$Date[2:5880],sigma(mod1), col=3, lty=3,type="l")
+cf1=round(coef(mod2)[3],4)
+
+cf1
+#l1 = as.expression("iGARCH")
+l2 = as.expression(substitute(paste("EWMA[est.",lambda,"=",x,"]"), list(x=cf1)))
+l2
+l3 = as.expression(substitute(paste("EWMA[fix.",lambda,"=",x,"]"), list(x=0.94)))
+l3
+#legend("topleft", c(l1, l2, l3), col=1:3, lty=1:3, bty="n", cex=0.9)
+legend("topleft", c( l2, l3), col=1:2, lty=1:2, bty="n", cex=0.9)
