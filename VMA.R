@@ -6,6 +6,10 @@
 # Load necessary libraries
 library(MASS)  # for mvrnorm and cov2cor
 library(dplyr)  # for data manipulation
+# Load necessary library
+library(ggplot2)
+# Melt the data frame to long format for easier plotting with ggplot2
+library(tidyr)
 
 # Set seed for reproducibility
 set.seed(123456789)
@@ -34,3 +38,94 @@ colnames(df) <- c("y1", "y2")
 
 # Display the first few rows of the time-series data
 head(df)
+
+
+
+# Assuming 'df' is your data frame from the previous code
+df$time <- 1:nrow(df)  # Create a time variable for plotting
+
+# Plotting both components of y
+p1 <- ggplot(df, aes(x = time)) + 
+  geom_line(aes(y = y1), color = "blue") +
+  ggtitle("Component y1 over Time") +
+  xlab("Time") +
+  ylab("y1") +
+  theme_minimal()
+
+p2 <- ggplot(df, aes(x = time)) + 
+  geom_line(aes(y = y2), color = "red") +
+  ggtitle("Component y2 over Time") +
+  xlab("Time") +
+  ylab("y2") +
+  theme_minimal()
+# Print the plots
+print(p1)
+print(p2)
+
+# plotting in the same plot
+
+df_long <- pivot_longer(df, cols = c(y1, y2), names_to = "variable", values_to = "value")
+
+# Plotting both components of y on the same graph
+combined_plot <- ggplot(df_long, aes(x = time, y = value, color = variable)) + 
+  geom_line() +
+  ggtitle("Components y1 and y2 over Time") +
+  xlab("Time") +
+  ylab("Value") +
+  theme_minimal() +
+  scale_color_manual(values = c("blue", "red"), labels = c("y1", "y2"))
+
+# Print the combined plot
+print(combined_plot)
+
+
+
+
+
+# Plotting both components of y, each on its own panel
+side_by_side_plot <- ggplot(df_long, aes(x = time, y = value,color=variable)) +
+  geom_line() +
+  facet_wrap(~variable, scales = "free_y") +  # Create two panels, free_y allows independent y scales
+  ggtitle("Comparison of Components y1 and y2 over Time") +
+  xlab("Time") +
+  ylab("Value") +
+  theme_minimal()+
+  scale_color_manual(values = c("blue", "red"), labels = c("y1", "y2"))
+# Print the side-by-side plot
+print(side_by_side_plot)
+
+
+##
+# Similar model for univariate MA
+##
+
+y1 <- matrix(0, nrow=n, ncol=1)
+y2 <- matrix(0, nrow=n, ncol=1)
+for (i in 2:n) {
+  y1[i] <- m[1] + e[i,1] + A[1,1] * e[i-1,1]
+  y2[i] <- m[2] + e[i,1] + A[2,2] * e[i-1,2]
+}
+
+
+# Convert to time-series data frame
+df_uni <- as.data.frame(cbind(y1,y2))
+colnames(df_uni) <- c("y1", "y2")
+df_uni$time <- 1:nrow(df)  # Create a time variable for plotting
+
+# Display the first few rows of the time-series data
+head(df_uni)
+
+df_long_uni <- pivot_longer(df_uni, cols = c(y1, y2), names_to = "variable", values_to = "value")
+
+
+# Plotting both components of y, each on its own panel
+side_by_side_plot_uni <- ggplot(df_long_uni, aes(x = time, y = value,color=variable)) +
+  geom_line() +
+  facet_wrap(~variable, scales = "free_y") +  # Create two panels, free_y allows independent y scales
+  ggtitle("Comparison of univariate components y1 and y2 over Time") +
+  xlab("Time") +
+  ylab("Value") +
+  theme_minimal()+
+  scale_color_manual(values = c("blue", "red"), labels = c("y1", "y2"))
+# Print the side-by-side plot
+print(side_by_side_plot_uni)
