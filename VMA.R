@@ -2,6 +2,34 @@
 # Script to simulate MVA(1)
 #
 
+##
+# clean workspace
+##
+rm(list = ls()) 
+##
+# free up memory space
+##
+gc(reset = TRUE)
+
+
+# Load package using a function load_package-----------------------------------------------------------------
+load_package<-function(x){
+  x<-as.character(match.call()[[2]])
+  if (!require(x,character.only=TRUE)){
+    install.packages(pkgs=x,repos="http://cran.r-project.org")
+    require(x,character.only=TRUE)
+  }
+}
+
+load_package(" MASS")
+load_package("dplyr")
+load_package("forecast")
+load_package("xtable")
+load_package("readxl")
+load_package("stats")
+load_package("ggplot2")
+load_package("xts")
+
 
 # Load necessary libraries
 library(MASS)  # for mvrnorm and cov2cor
@@ -10,6 +38,7 @@ library(dplyr)  # for data manipulation
 library(ggplot2)
 # Melt the data frame to long format for easier plotting with ggplot2
 library(tidyr)
+library(forecast)
 
 # Set seed for reproducibility
 set.seed(123456789)
@@ -94,7 +123,25 @@ side_by_side_plot <- ggplot(df_long, aes(x = time, y = value,color=variable)) +
 # Print the side-by-side plot
 print(side_by_side_plot)
 
+##
+# Acf and Pacf for y1
+##
+par(mfrow=c(2,1))
+Acf(y[,1], lag.max = 24)
+Pacf(y[,1], lag.max = 24)
 
+##
+# Acf and Pacf for y2
+##
+par(mfrow=c(2,1))
+Acf(y[,2], lag.max = 24)
+Pacf(y[,2], lag.max = 24)
+
+##
+# Ccf cross-correlation for y1 and y2
+##
+par(mfrow=c(1,1))
+Ccf(y[,1],y[,2], lag.max=24, type = "correlation")
 ##
 # Similar model for univariate MA
 ##
