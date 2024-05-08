@@ -1,0 +1,167 @@
+#
+# Script to simulate VAR(1) Third Case $\lamba_{1}=1$ and $\lambda_{2} =  1$
+#
+##
+# clean workspace
+##
+rm(list = ls()) 
+##
+# free up memory space
+##
+gc(reset = TRUE)
+
+
+# Load package using a function load_package-----------------------------------------------------------------
+load_package<-function(x){
+  x<-as.character(match.call()[[2]])
+  if (!require(x,character.only=TRUE)){
+    install.packages(pkgs=x,repos="http://cran.r-project.org")
+    require(x,character.only=TRUE)
+  }
+}
+
+load_package(" MASS")
+load_package("dplyr")
+load_package("forecast")
+load_package("xtable")
+load_package("readxl")
+load_package("stats")
+load_package("ggplot2")
+
+
+# Load necessary libraries
+library(MASS)  # for mvrnorm and cov2cor
+library(dplyr)  # for data manipulation
+# Load necessary library
+library(ggplot2)
+# Melt the data frame to long format for easier plotting with ggplot2
+library(tidyr)
+library(forecast)
+
+# Set seed for reproducibility
+#set.seed(123456789)
+set.seed(123456)
+
+# Parameters
+n <- 201
+A <- matrix(c(0.8,0.2,-0.2,1.2), nrow=2, byrow=TRUE)  # A matrix
+m <- c(0, 0)  # constant vector m
+
+# Covariance matrix
+cov_matrix <- matrix(c(0.3, 0.2, 0.2, 0.2), nrow=2, byrow=TRUE)
+sigma <- cov2cor(cov_matrix)  # Convert to correlation matrix for mvrnorm
+
+# Generate multivariate normal errors
+e <- mvrnorm(n, mu=c(0,0), Sigma=sigma)
+
+# Construct y_t
+y <- matrix(0, nrow=n, ncol=2)
+for (i in 2:n) {
+  y[i,] <- m + e[i,] + A %*% y[i-1,]
+}
+
+# Convert to time-series data frame
+df <- as.data.frame(y)
+colnames(df) <- c("y1", "y2")
+
+# Display the first few rows of the time-series data
+head(df)
+
+
+
+# Assuming 'df' is your data frame from the previous code
+df$time <- 1:nrow(df)  # Create a time variable for plotting
+
+# Plotting both components of y
+p1 <- ggplot(df, aes(x = time)) + 
+  geom_line(aes(y = y1), color = "blue") +
+  ggtitle("Component y1 over Time") +
+  xlab("Time") +
+  ylab("y1") +
+  theme_minimal()
+
+p2 <- ggplot(df, aes(x = time)) + 
+  geom_line(aes(y = y2), color = "red") +
+  ggtitle("Component y2 over Time") +
+  xlab("Time") +
+  ylab("y2") +
+  theme_minimal()
+# Print the plots
+print(p1)
+print(p2)
+
+# plotting in the same plot
+
+df_long <- pivot_longer(df, cols = c(y1, y2), names_to = "variable", values_to = "value")
+
+# Plotting both components of y on the same graph
+combined_plot <- ggplot(df_long, aes(x = time, y = value, color = variable)) + 
+  geom_line() +
+  ggtitle("Components y1 and y2 over Time") +
+  xlab("Time") +
+  ylab("Value") +
+  theme_minimal() +
+  scale_color_manual(values = c("blue", "red"), labels = c("y1", "y2"))
+
+# Print the combined plot
+print(combined_plot)
+
+
+
+
+
+# Plotting both components of y, each on its own panel
+side_by_side_plot <- ggplot(df_long, aes(x = time, y = value,color=variable)) +
+  geom_line() +
+  facet_wrap(~variable, scales = "free_y") +  # Create two panels, free_y allows independent y scales
+  ggtitle("Comparison of Components y1 and y2 over Time") +
+  xlab("Time") +
+  ylab("Value") +
+  theme_minimal()+
+  scale_color_manual(values = c("blue", "red"), labels = c("y1", "y2"))
+# Print the side-by-side plot
+print(side_by_side_plot)
+
+z2 <- y[,1]-y[,2]
+
+z2_coint <- ggplot(df, aes(x = time)) + 
+  geom_line(aes(y = z2), color = "red") +
+  ggtitle("") +
+  xlab("Time") +
+  ylab("z2") +
+  theme_minimal()
+par(mfrow=c(1,1))
+print(z2_coint)
+
+##
+# Acf and Pacf for y1
+##
+par(mfrow=c(2,1))
+Acf(y[,1], lag.max = 24)
+Pacf(y[,1], lag.max = 24)
+
+##
+# Acf and Pacf for y2
+##
+par(mfrow=c(2,1))
+Acf(y[,2], lag.max = 24)
+Pacf(y[,2], lag.max = 24)
+
+##
+# Ccf cross-correlation for y1 and y2
+##
+par(mfrow=c(1,1))
+Ccf(y[,1],y[,2], lag.max=24, type = "correlation")
+
+##
+# Similar model for univariate AR
+##
+
+y1 <- matrix(0, nrow=n, ncol=1)
+y2 <- matrix(0, nrow=n, ncol=1)
+for (i in 2:n) {
+  y1[i] <- m[1] + e[i,1] + A[1,1] * y1[i-1]
+  y2[i] <- m[2] + e[i,1] + A[2,2] * y2[i-1]
+}
+
+
