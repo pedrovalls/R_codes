@@ -137,6 +137,42 @@ print(side_by_side_plot)
 
 
 
+
+##
+# two cointegrated relationship
+# y2 - y1 and y3 - y1
+##
+
+z1 <- y[,2]-y[,1]
+
+z1_coint <- ggplot(df, aes(x = time)) + 
+  geom_line(aes(y = z1), color = "red") +
+  ggtitle("") +
+  xlab("Time") +
+  ylab("z1") +
+  theme_minimal()
+par(mfrow=c(1,1))
+print(z1_coint)
+
+z2 <- y[,3]-y[,1]
+
+z2_coint <- ggplot(df, aes(x = time)) + 
+  geom_line(aes(y = z2), color = "blue") +
+  ggtitle("") +
+  xlab("Time") +
+  ylab("z2") +
+  theme_minimal()
+par(mfrow=c(1,1))
+print(z2_coint)
+
+par(mfrow=c(2,1))
+plot(df$time,z1, xlab="Time", ylab="z1", type="l", col = "red" )
+plot(df$time,z2, xlab="Time", ylab="z2", type= "l",col = "blue" )
+
+
+
+
+
 ##
 # Acf and Pacf for y1
 ##
@@ -181,3 +217,6 @@ Ccf(y[,1],y[,3], lag.max=24, type = "correlation")
 ##
 par(mfrow=c(1,1))
 Ccf(y[,2],y[,3], lag.max=24, type = "correlation")
+
+
+
