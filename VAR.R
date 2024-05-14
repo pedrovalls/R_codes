@@ -27,6 +27,10 @@ load_package("xtable")
 load_package("readxl")
 load_package("stats")
 load_package("ggplot2")
+load_package("vars")
+load_package("tseries")
+load_package("moments")
+
 
 
 # Load necessary libraries
@@ -37,6 +41,9 @@ library(ggplot2)
 # Melt the data frame to long format for easier plotting with ggplot2
 library(tidyr)
 library(forecast)
+library(vars)
+library(tseries)
+library(moments)
 
 # Set seed for reproducibility
 set.seed(123456789)
@@ -123,6 +130,7 @@ print(side_by_side_plot)
 
 
 
+
 ##
 # Acf and Pacf for y1
 ##
@@ -194,6 +202,9 @@ par(mfrow=c(2,1))
 Acf(y2, lag.max = 24, main ="Acf for y2")
 Pacf(y2, lag.max = 24, main = "Pacf for y2")
 
+
+write.csv(y, file= "C:/Users/Pedro.valls/Dropbox/EcoIII2021/Lecture7_var_vec/Script_R/y.csv" )
+
 ##
 # Select the order of VAR
 ##
@@ -217,5 +228,36 @@ modelo_var1
 summary(modelo_var1)
 modelo_var1$ic$SC
 
+##
+# Var sem constante e tendencia
+##
+modelo_var2 <- VAR(new_df, p=1, type="none",ic = "SC")
+modelo_var2
+summary(modelo_var2)
+
+##
+# plot residuals
+##
+par(mfrow=c(2,1))
+y1 <- expression(~ y[1])
+y2 <- expression (~ y[2])
+plot(df_uni$time[2:201],resid_modelo_var2[,1],ty="l", col = "red", ylab=y1, xlab = "time")
+plot(df_uni$time[2:201],resid_modelo_var2[,2],ty="l", col = "blue", ylab=y2, xlab = "time")
+
+##
+# Teste for serial correlation
+##
+
+serial.test(modelo_Var2)
 
 
+##
+# Normality test
+##
+normality.test(modelo_Var2,multivariate.only = FALSE)
+jarque.bera.test(res_y1)
+
+##
+# ARCH test
+##
+arch.test(modelo_Var2, multivariate.only = FALSE)
