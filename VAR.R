@@ -194,5 +194,28 @@ par(mfrow=c(2,1))
 Acf(y2, lag.max = 24, main ="Acf for y2")
 Pacf(y2, lag.max = 24, main = "Pacf for y2")
 
+##
+# Select the order of VAR
+##
+new_df <- as.data.frame(y)
+colnames(new_df) <- c("y1", "y2") 
+resultado_varselect <- VARselect(new_df, lag.max = 10, type = "both")
+resultado_varselect
+ordem_optima <- resultado_varselect$selection["SC(n)"]
+ordem_optima
+
+##
+# Fixing the sample size
+##
+resultado_varselect_fix <- VARselect(new_df[11:201,], lag.max = 10, type = "both")
+resultado_varselect_fix
+ordem_optima_fix <- resultado_varselect_fix$selection["SC(n)"]
+ordem_optima_fix
+
+modelo_var1 <- VAR(new_df, p=1, type="both",ic = "SC")
+modelo_var1
+summary(modelo_var1)
+modelo_var1$ic$SC
+
 
 
