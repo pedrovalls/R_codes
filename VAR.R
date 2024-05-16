@@ -28,9 +28,7 @@ load_package("readxl")
 load_package("stats")
 load_package("ggplot2")
 load_package("vars")
-load_package("tseries")
 load_package("moments")
-
 
 
 # Load necessary libraries
@@ -42,7 +40,6 @@ library(ggplot2)
 library(tidyr)
 library(forecast)
 library(vars)
-library(tseries)
 library(moments)
 
 # Set seed for reproducibility
@@ -203,7 +200,7 @@ Acf(y2, lag.max = 24, main ="Acf for y2")
 Pacf(y2, lag.max = 24, main = "Pacf for y2")
 
 
-write.csv(y, file= "C:/Users/Pedro.valls/Dropbox/EcoIII2021/Lecture7_var_vec/Script_R/y.csv" )
+write.csv(y, file= "C:/Users/Pedro/Dropbox/EcoIII2021/Lecture7_var_vec/Script_R/y.csv" )
 
 ##
 # Select the order of VAR
@@ -223,41 +220,93 @@ resultado_varselect_fix
 ordem_optima_fix <- resultado_varselect_fix$selection["SC(n)"]
 ordem_optima_fix
 
-modelo_var1 <- VAR(new_df, p=1, type="both",ic = "SC")
+modelo_var1 <- VAR(new_df, p=1, type="both",ic = "BIC")
 modelo_var1
 summary(modelo_var1)
-modelo_var1$ic$SC
 
 ##
-# Var sem constante e tendencia
+# VAR(1) without constant and linear trend
 ##
-modelo_var2 <- VAR(new_df, p=1, type="none",ic = "SC")
+
+modelo_var2 <- VAR(new_df, p=1, type="none",ic = "BIC")
 modelo_var2
 summary(modelo_var2)
 
 ##
-# plot residuals
+# Test for serial correlation
 ##
-par(mfrow=c(2,1))
-y1 <- expression(~ y[1])
-y2 <- expression (~ y[2])
-plot(df_uni$time[2:201],resid_modelo_var2[,1],ty="l", col = "red", ylab=y1, xlab = "time")
-plot(df_uni$time[2:201],resid_modelo_var2[,2],ty="l", col = "blue", ylab=y2, xlab = "time")
+Serial2 <- serial.test(modelo_var2, lags.pt = 16, type = "PT.asymptotic")
+Serial2
+plot(Serial2, names="y1")
+plot(Serial2, names = "y2")
 
 ##
-# Teste for serial correlation
+# Test for normality
 ##
-
-serial.test(modelo_Var2)
-
-
-##
-# Normality test
-##
-normality.test(modelo_Var2,multivariate.only = FALSE)
-jarque.bera.test(res_y1)
+Normal2 <- normality.test(modelo_var2, multivariate.only = FALSE)
+Normal2
 
 ##
-# ARCH test
+# heteroscedasticity of ARCH type
 ##
-arch.test(modelo_Var2, multivariate.only = FALSE)
+
+Arch2 <- arch.test(modelo_var2, lags.single=16, multivariate.only = FALSE)
+Arch2
+
+
+##
+# Show AR roots (eigenvalues of the companion matrix)
+##
+par(mfrow=c(1,1))
+ar_roots <- roots(modelo_var2)
+time = cbind(1,2)
+plot(time,ar_roots, type = "b")
+
+# Create points on the unit circle
+theta <- seq(0, 2 * pi, length.out = 100)
+x <- cos(theta)
+y <- sin(theta)
+
+# Points to be added
+points_x <- c(0.573, 0.28)
+points_y <- c(0, 0)
+
+# Plot the unit circle
+plot(x, y, type = 'l', asp = 1, main = "Inverse Roots of AR Characteristic Polynomial", xlab = "X", ylab = "Y")
+abline(h = 0, col = "blue", lty = 2)  # x-axis
+abline(v = 0, col = "blue", lty = 2)  # y-axis
+
+# Add points to the plot
+points(points_x, points_y, col = "red", pch = 19, cex = 1.5)
+
+
+##
+# Using ggplot
+##
+
+
+# Create a data frame with points on the unit circle
+theta <- seq(0, 2 * pi, length.out = 100)
+circle <- data.frame(
+  x = cos(theta),
+  y = sin(theta)
+)
+
+# Points to be added
+points_df <- data.frame(
+  x = c(0.573, 0.28),
+  y = c(0, 0)
+)
+
+# Plot the unit circle and points using ggplot2
+ggplot(circle, aes(x, y)) +
+  geom_path() +
+  geom_point(data = points_df, aes(x, y), color = "red", size = 3) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "blue") +  # x-axis
+  geom_vline(xintercept = 0, linetype = "dashed", color = "blue") +  # y-axis
+  coord_fixed() +  # Ensure the aspect ratio is 1:1
+  labs(title = "Inverse Roots of AR Characteristic Polynomial",
+       x = "X",
+       y = "Y") +
+  theme_minimal()
+
