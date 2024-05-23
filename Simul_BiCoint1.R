@@ -1,5 +1,5 @@
 # set local directory to where data set is 
-# setwd("C:/Users/Pedro/Dropbox/ecoiii2020/Lecture7_var_vec/VEC/R_script")
+setwd("C:/Users/Pedro/Dropbox/EcoIII2021/Lecture7_var_vec/VEC/R_script")
 
 # Load package using a function load_package-----------------------------------------------------------------
 load_package<-function(x){
