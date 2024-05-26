@@ -310,3 +310,15 @@ ggplot(circle, aes(x, y)) +
        y = "Y") +
   theme_minimal()
 
+##
+# Grangre Caulatity test
+##
+##
+# H_{0} y1 do not Granger cause y2
+#
+causality(modelo_var2, cause=c("y1"))
+
+
+# H_{0} y2 do not Granger cause y1
+#
+causality(modelo_var2, cause=c("y2"))
