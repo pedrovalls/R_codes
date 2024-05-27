@@ -322,3 +322,33 @@ causality(modelo_var2, cause=c("y1"))
 # H_{0} y2 do not Granger cause y1
 #
 causality(modelo_var2, cause=c("y2"))
+
+
+
+##
+# IRF orthogonal 
+##
+irf_modelo_var2_ort <- irf(modelo_var2, n.ahead = 10, otho = TRUE)
+plot(irf_modelo_var2_ort)
+
+##
+# IRF cumulative
+##
+irf_modelo_var2_cumul <- irf(modelo_var2, n.ahead = 10, ortho = FALSE, cumulative = TRUE)
+plot(irf_modelo_var2_cumul)
+##
+# IRF ortho and cumulative equal to FALSE 
+##
+
+irf_modelo_var2 <- irf(modelo_var2, n.ahead = 10, ortho = FALSE, cumulative = FALSE)
+plot(irf_modelo_var2)
+
+#'
+#' ## Variance Decomposition
+#' 
+
+fevd(modelo_var2, n.ahead=10)
+
+
+
+
